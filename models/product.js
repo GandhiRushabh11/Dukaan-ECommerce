@@ -6,13 +6,13 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
-      required: [true, "Please add a name for the product"],
+      required: [true],
       maxlength: 100,
     },
     description: {
       type: String,
       trim: true,
-      required: [true, "Please add a description for the product"],
+      required: [true],
     },
     imagesPath: {
       type: Array,
@@ -26,16 +26,16 @@ const productSchema = new mongoose.Schema(
       unique: true,
     },
     price: {
-      type: number,
-      required: [true, "Please add a price for the product"],
+      type: Number,
+      required: [true],
     },
-    weight: number,
+    weight: Number,
     manufacturer: {
       type: String,
     },
     qty: {
-      type: number,
-      required: [true, "Please add a quantity for the product"],
+      type: Number,
+      required: [true],
       default: 1,
     },
     visibility: {
