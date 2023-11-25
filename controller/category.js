@@ -41,7 +41,7 @@ exports.getCategory = async (req, res, next) => {
 exports.deleteCategory = async (req, res, next) => {
   let categories;
   try {
-    categories = await category.findById(req.params.id);
+    categories = await category.findById( );
     if (!categories)
       return next(
         new ErrorResponse(`No Category with the id of ${req.params.id}`, 404)
