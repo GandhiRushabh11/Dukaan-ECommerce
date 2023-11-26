@@ -33,8 +33,6 @@ exports.addToCart = async (req, res, next) => {
         //product exists in the cart, update the quantity
 
         cart.items[indexFound].qty = cart.items[indexFound].qty + qty;
-        cart.items[indexFound].total =
-          cart.items[indexFound].quantity * productDetails.price;
         cart.items[indexFound].price = productDetails.price;
         cart.items[indexFound].total =
           productDetails.price * cart.items[indexFound].qty;
@@ -106,22 +104,55 @@ exports.removeItem = async (req, res, next) => {
       let indexFound = cart.items.findIndex((p) => p.product == productID);
 
       if (indexFound > -1) {
-        //product exists in the cart, update the quantity
+        //product exists in the cart, update the Item
         cart.totalQty = cart.items.length - 1;
         cart.totalCost = cart.totalCost - cart.items[indexFound].total;
         cart.items.splice(indexFound, 1);
       } else {
-        return next(
-          new ErrorResponse(
-            `No Product with the id of ${productID} in your card`
-          ),
-          404
-        );
+        return next(new ErrorResponse(`Product does not exist in cart`), 404);
       }
       cart = await cart.save();
       res.status(200).send({ success: true, cart });
-    } else {
-      return next(new ErrorResponse("No Cart Found", 404));
+    }
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
+exports.decreaseQuantity = async (req, res, next) => {
+  let user = req.user;
+  const { productID } = req.body;
+
+  try {
+    // -------Get users Cart ------
+    let cart = await Cart.findOne({
+      user,
+    });
+    let productDetails = await Product.findById(productID);
+    if (!productDetails)
+      return next(new ErrorResponse(`Product does not exist in cart`, 404));
+    if (cart) {
+      //cart exists for user
+      let indexFound = cart.items.findIndex((p) => p.product == productID);
+
+      if (indexFound > -1) {
+        //product exists in the cart, update the quantity
+
+        if (cart.items[indexFound].qty === 1) {
+          cart.items[indexFound].qty = cart.items[indexFound].qty - 1;
+          cart.totalQty = cart.items.length - 1;
+          cart.totalCost = cart.totalCost - cart.items[indexFound].total;
+          cart.items.splice(indexFound, 1);
+        } else {
+          cart.items[indexFound].qty = cart.items[indexFound].qty - 1;
+          cart.items[indexFound].total =
+            productDetails.price * cart.items[indexFound].qty;
+          cart.totalCost = cart.totalCost - productDetails.price;
+        }
+      } else {
+        return next(new ErrorResponse(`Product does not exist in cart`), 404);
+      }
+      cart = await cart.save();
+      res.status(200).send({ success: true, cart });
     }
   } catch (error) {
     return next(new ErrorResponse(error, 500));
