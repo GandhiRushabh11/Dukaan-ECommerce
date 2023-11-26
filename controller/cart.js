@@ -93,3 +93,37 @@ exports.getMyCart = async (req, res, next) => {
     return next(new ErrorResponse(error, 500));
   }
 };
+exports.removeItem = async (req, res, next) => {
+  let user = req.user;
+  let { productID } = req.body;
+  try {
+    // -------Get users Cart ------
+    let cart = await Cart.findOne({
+      user,
+    });
+    if (cart) {
+      //cart exists for user
+      let indexFound = cart.items.findIndex((p) => p.product == productID);
+
+      if (indexFound > -1) {
+        //product exists in the cart, update the quantity
+        cart.totalQty = cart.items.length - 1;
+        cart.totalCost = cart.totalCost - cart.items[indexFound].total;
+        cart.items.splice(indexFound, 1);
+      } else {
+        return next(
+          new ErrorResponse(
+            `No Product with the id of ${productID} in your card`
+          ),
+          404
+        );
+      }
+      cart = await cart.save();
+      res.status(200).send({ success: true, cart });
+    } else {
+      return next(new ErrorResponse("No Cart Found", 404));
+    }
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
