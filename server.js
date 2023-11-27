@@ -9,6 +9,7 @@ const category = require("./routes/category.js");
 const user = require("./routes/auth.js");
 const product = require("./routes/product.js");
 const cart = require("./routes/cart.js");
+const review = require("./routes/review.js");
 const cookieParser = require("cookie-parser");
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms")
@@ -24,6 +25,7 @@ app.use("/api/v1/", category);
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
 app.use("/api/v1/cart", cart);
+app.use("/api/v1/reviews", review);
 //Custom Error Handler
 app.use(errorHandler);
 
