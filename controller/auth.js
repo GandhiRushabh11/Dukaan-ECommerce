@@ -1,9 +1,10 @@
+const asyncHandler = require("../middleware/async.js");
 const user = require("../models/user.js");
 const { generateRandomToken } = require("../utils/common.js");
 const ErrorResponse = require("../utils/errorResponse.js");
 const sendEmail = require("../utils/sendEmail.js");
 
-exports.userRegister = async (req, res, next) => {
+exports.userRegister = asyncHandler(async (req, res, next) => {
   let createdUser;
   let {
     firstname,
@@ -38,8 +39,8 @@ exports.userRegister = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.userlogin = async (req, res, next) => {
+});
+exports.userlogin = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Validate emil & password
@@ -66,7 +67,7 @@ exports.userlogin = async (req, res, next) => {
   }
   //Create Token
   sendTokenResponse(userData, 200, res);
-};
+});
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
@@ -86,7 +87,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   });
 };
 
-exports.sendEmailVerification = async function (req, res, next) {
+exports.sendEmailVerification = asyncHandler(async function (req, res, next) {
   let user = req.user;
   if (!user) {
     return next(new ErrorResponse("Not authorized to access this route", 401));
@@ -127,8 +128,8 @@ exports.sendEmailVerification = async function (req, res, next) {
       return next(new ErrorResponse("Email could not be sent", 500));
     }
   }
-};
-exports.verifyEmail = async function (req, res, next) {
+});
+exports.verifyEmail = asyncHandler(async function (req, res, next) {
   // Get hashed token
   const emailToken = generateRandomToken(req.params.emailToken);
   const userData = await user.findOne({
@@ -162,9 +163,9 @@ exports.verifyEmail = async function (req, res, next) {
   } catch (err) {
     return next(new ErrorResponse("Email could not be sent", 500));
   }
-};
+});
 
-exports.updatePassword = async (req, res, next) => {
+exports.updatePassword = asyncHandler(async (req, res, next) => {
   const userData = await user.findById(req.user.id).select("+password");
 
   // Check current password
@@ -176,9 +177,9 @@ exports.updatePassword = async (req, res, next) => {
   await userData.save();
 
   sendTokenResponse(userData, 200, res);
-};
+});
 
-exports.updateDetails = async (req, res, next) => {
+exports.updateDetails = asyncHandler(async (req, res, next) => {
   const fieldsToUpdate = ({
     firstname,
     lastname,
@@ -200,9 +201,9 @@ exports.updateDetails = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});
 
-exports.logout = async (req, res, next) => {
+exports.logout = asyncHandler(async (req, res, next) => {
   res.cookie("token", "", {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
@@ -212,9 +213,9 @@ exports.logout = async (req, res, next) => {
     success: true,
     data: {},
   });
-};
+});
 
-exports.getMe = async (req, res, next) => {
+exports.getMe = asyncHandler(async (req, res, next) => {
   // user is already available in req due to the protect middleware
   const user = req.user;
 
@@ -222,4 +223,4 @@ exports.getMe = async (req, res, next) => {
     success: true,
     data: user,
   });
-};
+});

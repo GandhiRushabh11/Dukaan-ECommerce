@@ -1,8 +1,9 @@
+const asyncHandler = require("../middleware/async.js");
 const Cart = require("../models/cart.js");
 const Product = require("../models/product.js");
 const ErrorResponse = require("../utils/errorResponse.js");
 
-exports.addToCart = async (req, res, next) => {
+exports.addToCart = asyncHandler(async (req, res, next) => {
   let user = req.user;
   const { productID, qty } = req.body;
 
@@ -70,8 +71,8 @@ exports.addToCart = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.getMyCart = async (req, res, next) => {
+});
+exports.getMyCart = asyncHandler(async (req, res, next) => {
   let user = req.user;
 
   try {
@@ -90,8 +91,8 @@ exports.getMyCart = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.removeItem = async (req, res, next) => {
+});
+exports.removeItem = asyncHandler(async (req, res, next) => {
   let user = req.user;
   let { productID } = req.body;
   try {
@@ -117,8 +118,8 @@ exports.removeItem = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.decreaseQuantity = async (req, res, next) => {
+});
+exports.decreaseQuantity = asyncHandler(async (req, res, next) => {
   let user = req.user;
   const { productID } = req.body;
 
@@ -157,4 +158,4 @@ exports.decreaseQuantity = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});

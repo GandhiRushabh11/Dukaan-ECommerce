@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const user = require("../models/user.js");
 const ErrorResponse = require("../utils/errorResponse.js");
-exports.protect = async (req, res, next) => {
+const asyncHandler = require("./async.js");
+exports.protect = asyncHandler(async (req, res, next) => {
   let token;
 
   if (
@@ -27,4 +28,4 @@ exports.protect = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse("Not authorized to access this route", 401));
   }
-};
+});

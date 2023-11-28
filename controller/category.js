@@ -1,7 +1,8 @@
+const asyncHandler = require("../middleware/async.js");
 const category = require("../models/category");
 const ErrorResponse = require("../utils/errorResponse.js");
 
-exports.createCategory = async (req, res, next) => {
+exports.createCategory = asyncHandler(async (req, res, next) => {
   let createdCategory;
   let { name, description } = req.body;
   try {
@@ -14,9 +15,9 @@ exports.createCategory = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});
 
-exports.getCategorios = async (req, res, next) => {
+exports.getCategorios = asyncHandler(async (req, res, next) => {
   let Categorios;
   try {
     Categorios = await category.find();
@@ -24,8 +25,8 @@ exports.getCategorios = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.getCategory = async (req, res, next) => {
+});
+exports.getCategory = asyncHandler(async (req, res, next) => {
   let Category;
   try {
     Category = await category.findById(req.params.id);
@@ -37,11 +38,11 @@ exports.getCategory = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.deleteCategory = async (req, res, next) => {
+});
+exports.deleteCategory = asyncHandler(async (req, res, next) => {
   let categories;
   try {
-    categories = await category.findById( );
+    categories = await category.findById();
     if (!categories)
       return next(
         new ErrorResponse(`No Category with the id of ${req.params.id}`, 404)
@@ -51,9 +52,9 @@ exports.deleteCategory = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});
 
-exports.updateCategory = async (req, res, next) => {
+exports.updateCategory = asyncHandler(async (req, res, next) => {
   let categories;
   try {
     categories = await category.findById(req.params.id);
@@ -69,4 +70,4 @@ exports.updateCategory = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});

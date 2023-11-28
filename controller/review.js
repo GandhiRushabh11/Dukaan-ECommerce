@@ -1,8 +1,9 @@
+const asyncHandler = require("../middleware/async.js");
 const Product = require("../models/product.js");
 const Review = require("../models/review.js");
 const ErrorResponse = require("../utils/errorResponse.js");
 
-exports.getReviews = async (req, res, next) => {
+exports.getReviews = asyncHandler(async (req, res, next) => {
   if (req.params.productId) {
     const reviews = await Review.find({
       product: req.params.productId,
@@ -30,8 +31,8 @@ exports.getReviews = async (req, res, next) => {
       data: reviews,
     });
   }
-};
-exports.getReview = async (req, res, next) => {
+});
+exports.getReview = asyncHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id).populate({
     path: "product",
     select: "name description",
@@ -47,8 +48,8 @@ exports.getReview = async (req, res, next) => {
     success: true,
     data: review,
   });
-};
-exports.addReview = async (req, res, next) => {
+});
+exports.addReview = asyncHandler(async (req, res, next) => {
   let { text, rating } = req.body;
   const product = await Product.findById(req.params.productId);
 
@@ -72,8 +73,8 @@ exports.addReview = async (req, res, next) => {
     success: true,
     data: review,
   });
-};
-exports.updateReview = async (req, res, next) => {
+});
+exports.updateReview = asyncHandler(async (req, res, next) => {
   let review = await Review.findById(req.params.id);
 
   if (!review) {
@@ -93,8 +94,8 @@ exports.updateReview = async (req, res, next) => {
     success: true,
     data: review,
   });
-};
-exports.deleteReview = async (req, res, next) => {
+});
+exports.deleteReview = asyncHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id);
 
   if (!review) {
@@ -109,4 +110,4 @@ exports.deleteReview = async (req, res, next) => {
     success: true,
     data: {},
   });
-};
+});

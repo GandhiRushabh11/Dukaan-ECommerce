@@ -1,8 +1,9 @@
 const crypto = require("crypto");
 const Product = require("../models/product");
 const ErrorResponse = require("../utils/errorResponse.js");
+const asyncHandler = require("../middleware/async.js");
 
-exports.createProduct = async (req, res, next) => {
+exports.createProduct = asyncHandler(async (req, res, next) => {
   let {
     name,
     description,
@@ -36,8 +37,8 @@ exports.createProduct = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.deleteProduct = async (req, res, next) => {
+});
+exports.deleteProduct = asyncHandler(async (req, res, next) => {
   try {
     let product = await Product.findById(req.params.id);
 
@@ -61,8 +62,8 @@ exports.deleteProduct = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.updateProduct = async (req, res, next) => {
+});
+exports.updateProduct = asyncHandler(async (req, res, next) => {
   let {
     name,
     description,
@@ -110,8 +111,8 @@ exports.updateProduct = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.deleteProduct = async (req, res, next) => {
+});
+exports.deleteProduct = asyncHandler(async (req, res, next) => {
   try {
     let product = await Product.findById(req.params.id);
 
@@ -135,8 +136,8 @@ exports.deleteProduct = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.getProducts = async (req, res, next) => {
+});
+exports.getProducts = asyncHandler(async (req, res, next) => {
   try {
     let product = await Product.find();
     res
@@ -145,8 +146,8 @@ exports.getProducts = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
-exports.getProduct = async (req, res, next) => {
+});
+exports.getProduct = asyncHandler(async (req, res, next) => {
   try {
     let product = await Product.findById(req.params.id);
     if (!product) {
@@ -158,4 +159,4 @@ exports.getProduct = async (req, res, next) => {
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }
-};
+});
