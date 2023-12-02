@@ -7,13 +7,15 @@ const {
   updatePassword,
   logout,
   getMe,
+  verifyRefreshToken,
 } = require("../controller/auth.js");
 const { protect } = require("../middleware/auth.js");
 const router = express.Router();
 router
   .post("/register", userRegister)
   .post("/login", userlogin)
-  .post("/verificationEmail", protect, sendEmailVerification);
+  .post("/verificationEmail", protect, sendEmailVerification)
+  .post("/refreshToken", verifyRefreshToken);
 router.put("/updatePassword", protect, updatePassword);
 router
   .get("/verifyEmail/:emailToken", verifyEmail)

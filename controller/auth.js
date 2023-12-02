@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const asyncHandler = require("../middleware/async.js");
 const user = require("../models/user.js");
 const { generateRandomToken } = require("../utils/common.js");
@@ -73,7 +74,7 @@ exports.userlogin = asyncHandler(async (req, res, next) => {
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
-
+  const refreshToken = user.getRefreshJwtToken();
   const options = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
@@ -81,10 +82,15 @@ const sendTokenResponse = (user, statusCode, res) => {
     httpOnly: true,
   };
 
-  res.status(statusCode).cookie("token", token, options).json({
-    success: true,
-    token,
-  });
+  res
+    .status(statusCode)
+    .cookie("token", token, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json({
+      success: true,
+      access_token: token,
+      refresh_token: refreshToken,
+    });
 };
 
 exports.sendEmailVerification = asyncHandler(async function (req, res, next) {
@@ -223,4 +229,20 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     success: true,
     data: user,
   });
+});
+
+exports.verifyRefreshToken = asyncHandler(async (req, res, next) => {
+  let token = req.body.refreshToken;
+  if (!token) {
+    return next(new ErrorResponse("Not authorized to access this route", 401));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    let decodedUser = await user.findById(decoded.id);
+    sendTokenResponse(decodedUser, 200, res);
+    next();
+  } catch (error) {
+    return next(new ErrorResponse("Not authorized to access this route", 401));
+  }
 });
