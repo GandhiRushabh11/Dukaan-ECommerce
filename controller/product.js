@@ -31,7 +31,7 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
       qty,
       visibility,
       category_id,
-      createdBy: req.user,
+      user: req.user,
     });
     res.status(200).json({ success: true, data: product });
   } catch (error) {
@@ -52,7 +52,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
         new ErrorResponse(`No Product with the id of ${req.params.id}`, 404)
       );
     }
-    if (!(product.createdBy._id.toString() === req.user._id.toString())) {
+    if (!(product.user._id.toString() === req.user._id.toString())) {
       return next(
         new ErrorResponse(`Not authorized to delete this Product`, 400)
       );
@@ -96,7 +96,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
         new ErrorResponse(`No Product with the id of ${req.params.id}`, 404)
       );
     }
-    if (!(product.createdBy._id.toString() === req.user._id.toString())) {
+    if (!(product.user._id.toString() === req.user._id.toString())) {
       return next(
         new ErrorResponse(`Not authorized to update this Product`, 400)
       );
@@ -126,7 +126,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
         new ErrorResponse(`No Product with the id of ${req.params.id}`, 404)
       );
     }
-    if (!(product.createdBy._id.toString() === req.user._id.toString())) {
+    if (!(product.user._id.toString() === req.user._id.toString())) {
       return next(
         new ErrorResponse(`Not authorized to delete this Product`, 400)
       );

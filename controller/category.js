@@ -9,7 +9,7 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
     createdCategory = await category.create({
       name,
       description,
-      createdBy: req.user,
+      user: req.user,
     });
     res.status(200).json({ success: true, data: createdCategory });
   } catch (error) {

@@ -46,11 +46,15 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "category",
     },
-    createdBy: {
+    user: {
       type: mongoose.Schema.ObjectId,
       ref: "user",
     },
   },
   { timestamps: true }
 );
+// when a product gets deleted we are also deleting all the reviews associated with it, with this pre-hook
+productSchema.pre("deleteOne", { document: true }, async function () {
+  await this.model("review").deleteMany({ product: this._id });
+});
 module.exports = mongoose.model("product", productSchema);

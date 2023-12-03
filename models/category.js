@@ -9,7 +9,7 @@ const categorySchema = new mongoose.Schema(
     image: String,
     status: { type: Boolean, default: true, required: true },
     slug: { type: String, slug: "name" },
-    createdBy: { type: mongoose.Schema.ObjectId, ref: "user", required: true },
+    user: { type: mongoose.Schema.ObjectId, ref: "user", required: true },
   },
   { timestamps: true }
 );
