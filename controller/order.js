@@ -130,10 +130,62 @@ exports.pay = async (req, res, next) => {
   if (!order) {
     return next(new ErrorResponse("Not authorized to access this Order", 404));
   }
-  /*  if (!(order.user._id.toString() === req.user._id.toString())) {
-    return next(new ErrorResponse(`Not authorized to access this Order`, 400));
-  } */
+  if (
+    order.status === "paid" ||
+    order.status === "delivered" ||
+    order.status === "canceled"
+  ) {
+    return next(
+      new ErrorResponse(`You Orders already has been ${order.status}`, 400)
+    );
+  }
+
   createPayment(order, res);
+};
+exports.verifySuccessPayment = async (req, res, next) => {
+  const paymentId = req.query.paymentId;
+  const payerId = req.query.PayerID;
+  try {
+    let order = await Order.find({ "paymentDetails.paymentId": paymentId });
+    if (!order) {
+      return next(
+        new ErrorResponse("Not authorized to access this Order", 404)
+      );
+    }
+    order = order.length > 0 ? order[0] : {};
+    const execute_payment_json = {
+      payer_id: payerId,
+      transactions: [
+        {
+          amount: {
+            currency: "USD",
+            total: order.total,
+          },
+        },
+      ],
+    };
+    paypal.payment.execute(
+      paymentId,
+      execute_payment_json,
+      function (error, payment) {
+        if (error) {
+          order.status = "failed";
+          order.paymentDetails.paymentState = "failed";
+          console.log(error.response);
+          return next(new ErrorResponse(error, 404));
+        } else {
+          order.status = "paid";
+          order.paymentDetails.paymentState = payment.state;
+          order.paymentDetails.payerInfo.push(payment.payer);
+          order.paymentDetails.token = req.query.token;
+          order.save();
+          res.status(200).json({ success: true, data: order });
+        }
+      }
+    );
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
 };
 
 function createPayment(order, res) {
@@ -144,7 +196,7 @@ function createPayment(order, res) {
     },
     redirect_urls: {
       return_url: "http://localhost:8000/api/v1/order/success",
-      cancel_url: "http://localhost:8000/cancel",
+      cancel_url: "http://localhost:8000/api/v1/order/cancel",
     },
     transactions: [
       {
@@ -158,7 +210,7 @@ function createPayment(order, res) {
   };
   paypal.payment.create(create_payment_json, function (error, payment) {
     if (error) {
-      throw error;
+      return next(new ErrorResponse(error, 404));
     } else {
       for (let i = 0; i < payment.links.length; i++) {
         if (payment.links[i].rel === "approval_url") {
