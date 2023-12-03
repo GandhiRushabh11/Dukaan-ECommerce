@@ -41,10 +41,11 @@ const orderSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    paymentId: {
-      type: String,
-      required: true,
-      default: "XXYYSSOIOH",
+    paymentDetails: {
+      paymentId: { type: String },
+      paymentState: { type: String, default: "pending" },
+      payerInfo: Array,
+      token: { type: String },
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

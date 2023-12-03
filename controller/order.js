@@ -1,8 +1,15 @@
 const Cart = require("../models/cart.js");
 const Order = require("../models/order.js");
+const paypal = require("paypal-rest-sdk");
 const asyncHandler = require("../middleware/async.js");
 const ErrorResponse = require("../utils/errorResponse.js");
-
+paypal.configure({
+  mode: "sandbox", //sandbox or live
+  client_id:
+    "AcLcf32f8JrH_32DS66wfAb3T_-8krVsJaHcxJufS-PrS_D6T04yWbV5QxI7PT9S_3MqUNOmPcFju1gv",
+  client_secret:
+    "EM_-StXbdaimswoNQZihYE5DWQlbuzAbQUCTeKqQ9e3huy8_mR1K5Grp3jAXiXej6jT5X3gw_t5k4gev",
+});
 exports.createOrder = asyncHandler(async (req, res, next) => {
   let user = req.user;
   let orderCart;
@@ -51,3 +58,116 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error, 500));
   }
 });
+
+exports.getAllOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find();
+    if (orders) {
+      res.status(200).send({ success: true, orders });
+    } else {
+      return next(new ErrorResponse("No orders found", 404));
+    }
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
+exports.getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.user });
+    if (orders) {
+      res.status(200).send({ success: true, orders });
+    } else {
+      return next(new ErrorResponse("No orders found", 404));
+    }
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
+exports.getMyOrder = async (req, res, next) => {
+  try {
+    let orderId = req.params.id;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return next(
+        new ErrorResponse("Not authorized to access this Order", 404)
+      );
+    }
+    if (!(order.user._id.toString() === req.user._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to access this Order`, 400)
+      );
+    }
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
+
+exports.cancelOrder = async (req, res, next) => {
+  try {
+    let orderId = req.params.id;
+    let order = await Order.findById(orderId);
+    if (!order) {
+      return next(
+        new ErrorResponse("Not authorized to access this Order", 404)
+      );
+    }
+    if (!(order.user._id.toString() === req.user._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to access this Order`, 400)
+      );
+    }
+    order.status = "canceled";
+    order.save();
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};
+exports.pay = async (req, res, next) => {
+  let orderId = req.params.id;
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return next(new ErrorResponse("Not authorized to access this Order", 404));
+  }
+  /*  if (!(order.user._id.toString() === req.user._id.toString())) {
+    return next(new ErrorResponse(`Not authorized to access this Order`, 400));
+  } */
+  createPayment(order, res);
+};
+
+function createPayment(order, res) {
+  let create_payment_json = {
+    intent: "sale",
+    payer: {
+      payment_method: "paypal",
+    },
+    redirect_urls: {
+      return_url: "http://localhost:8000/api/v1/order/success",
+      cancel_url: "http://localhost:8000/cancel",
+    },
+    transactions: [
+      {
+        amount: {
+          currency: "USD",
+          total: order["total"],
+        },
+        description: "This is the payment description.",
+      },
+    ],
+  };
+  paypal.payment.create(create_payment_json, function (error, payment) {
+    if (error) {
+      throw error;
+    } else {
+      for (let i = 0; i < payment.links.length; i++) {
+        if (payment.links[i].rel === "approval_url") {
+          order.paymentDetails.paymentId = payment.id;
+          order.save();
+          console.log(payment.links[i].href);
+          res.redirect(payment.links[i].href);
+        }
+      }
+    }
+  });
+}
