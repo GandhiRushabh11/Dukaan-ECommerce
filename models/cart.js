@@ -9,6 +9,7 @@ const SingleCartItemSchema = mongoose.Schema({
     required: true,
   },
   total: { type: Number, required: true },
+  status: { type: Boolean, default: true, required: true },
 });
 
 const cartSchema = new mongoose.Schema(
