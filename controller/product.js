@@ -160,3 +160,48 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error, 500));
   }
 });
+
+exports.uploadProductsImage = async (req, res, next) => {
+  try {
+    let user = req.user;
+    let product = await Product.findById(req.params.id);
+
+    if (!user) {
+      return next(
+        new ErrorResponse("Not authorized to access this route", 401)
+      );
+    }
+    if (!product) {
+      return next(
+        new ErrorResponse(`No Product with the id of ${req.params.id}`, 404)
+      );
+    }
+    if (!(product.user._id.toString() === user._id.toString())) {
+      return next(
+        new ErrorResponse(
+          `Not authorized to Upload Images for this Product`,
+          400
+        )
+      );
+    }
+    const images = req.files;
+    const imagesArray = images.map(
+      (image) => image.destination + "/" + image.filename
+    );
+
+    product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { imagesPath: imagesArray },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    /* //Pushing Images Path Array in To DB
+    product.imagesPath.push(ImagesArray);
+    product.save(); */
+    res.status(200).json({ success: true, data: product });
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+};

@@ -43,9 +43,7 @@ router
     "/uploadImage/:id",
     protect,
     upload.array("product_images", 3),
-    (req, res) => {
-      res.send(req.files);
-    }
+    uploadProductsImage
   )
   .delete("/deleteProduct/:id", protect, deleteProduct)
   .get("/:id", getProduct);
