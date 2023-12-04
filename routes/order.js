@@ -9,17 +9,17 @@ const {
   pay,
   verifySuccessPayment,
 } = require("../controller/order.js");
-const { protect } = require("../middleware/auth.js");
+const { protect, authorize } = require("../middleware/auth.js");
 router.post("/", protect, createOrder);
 router.put("/:id", protect, cancelOrder);
 router
-  .get("/pay/:id", pay)
-  .get("/allOrders", getAllOrders)
-  .get("/success", verifySuccessPayment)
-  .get("/cancel", (req, res) => {
+  .get("/pay/:id", authorize("admin", "user"), pay)
+  .get("/allOrders", authorize("admin", "user"), getAllOrders)
+  .get("/success", authorize("admin", "user"), verifySuccessPayment)
+  .get("/cancel", authorize("admin", "user"), (req, res) => {
     res.send("Your Got Orders Cancelled");
   })
-  .get("/:id", protect, getMyOrder)
-  .get("/", protect, getMyOrders);
+  .get("/:id", protect, authorize("admin", "user"), getMyOrder)
+  .get("/", protect, authorize("admin", "user"), getMyOrders);
 
 module.exports = router;

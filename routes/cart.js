@@ -6,10 +6,15 @@ const {
   removeItem,
   decreaseQuantity,
 } = require("../controller/cart.js");
-const { protect } = require("../middleware/auth.js");
-router.post("/addToCart", protect, addToCart);
-router.get("/", protect, getMyCart);
+const { protect, authorize } = require("../middleware/auth.js");
+router.post("/addToCart", protect, authorize("admin", "user"), addToCart);
+router.get("/", protect, authorize("admin", "user"), getMyCart);
 router
-  .put("/removeItem", protect, removeItem)
-  .put("/decreaseQuantity", protect, decreaseQuantity);
+  .put("/removeItem", protect, authorize("admin", "user"), removeItem)
+  .put(
+    "/decreaseQuantity",
+    protect,
+    authorize("admin", "user"),
+    decreaseQuantity
+  );
 module.exports = router;

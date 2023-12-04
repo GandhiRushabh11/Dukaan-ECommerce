@@ -12,7 +12,7 @@ const {
 const reviewRouter = require("../routes/review.js");
 const router = express.Router();
 const ErrorResponse = require("../utils/errorResponse.js");
-const { protect } = require("../middleware/auth.js");
+const { protect, authorize } = require("../middleware/auth.js");
 const multer = require("multer");
 const fs = require("fs");
 const storage = multer.diskStorage({
@@ -37,14 +37,30 @@ router.use("/:productId/reviews", reviewRouter);
 
 router
   .get("/", getProducts)
-  .post("/createProduct", protect, createProduct)
-  .put("/updateProduct/:id", protect, updateProduct)
+  .post(
+    "/createProduct",
+    protect,
+    authorize("admin", "customer"),
+    createProduct
+  )
+  .put(
+    "/updateProduct/:id",
+    protect,
+    authorize("admin", "customer"),
+    updateProduct
+  )
   .post(
     "/uploadImage/:id",
     protect,
+    authorize("admin", "customer"),
     upload.array("product_images", 3),
     uploadProductsImage
   )
-  .delete("/deleteProduct/:id", protect, deleteProduct)
+  .delete(
+    "/deleteProduct/:id",
+    protect,
+    authorize("admin", "customer"),
+    deleteProduct
+  )
   .get("/:id", getProduct);
 module.exports = router;
