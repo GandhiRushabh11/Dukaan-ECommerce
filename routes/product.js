@@ -10,6 +10,7 @@ const {
 
 // Include other resource routers
 const reviewRouter = require("../routes/review.js");
+const orderRouter = require("../routes/order.js");
 const router = express.Router();
 const ErrorResponse = require("../utils/errorResponse.js");
 const { protect, authorize } = require("../middleware/auth.js");
@@ -34,7 +35,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 //Re-route into other resource routers
 router.use("/:productId/reviews", reviewRouter);
-
+router.use("/:productId/order", orderRouter);
 router
   .get("/", getProducts)
   .post(

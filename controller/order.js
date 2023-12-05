@@ -61,11 +61,34 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
 
 exports.getAllOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find();
-    if (orders) {
-      res.status(200).send({ success: true, orders });
+    if (req.params.productId) {
+      const orders = await Order.find({
+        "orderCart.items.product": req.params.productId,
+      }).populate({
+        path: "orderCart",
+        select: "paymentDetails",
+      });
+      if (!orders) {
+        return next(
+          new ErrorResponse(
+            `No Orders found with the id of ${req.params.productId}`,
+            404
+          )
+        );
+      }
+      res.status(200).json({
+        success: true,
+        count: orders.length,
+        data: orders,
+      });
     } else {
-      return next(new ErrorResponse("No orders found", 404));
+      const orders = await Order.find();
+      if (!orders) {
+        return next(new ErrorResponse("No orders found", 404));
+      }
+      res
+        .status(200)
+        .send({ success: true, count: orders.length, data: orders });
     }
   } catch (error) {
     return next(new ErrorResponse(error, 500));

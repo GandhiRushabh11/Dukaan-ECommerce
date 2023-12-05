@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 const {
   createOrder,
   getMyOrders,
@@ -14,7 +14,7 @@ router.post("/", protect, createOrder);
 router.put("/:id", protect, cancelOrder);
 router
   .get("/pay/:id", authorize("admin", "user"), pay)
-  .get("/allOrders", authorize("admin", "user"), getAllOrders)
+  .get("/allOrders", protect, authorize("admin", "user"), getAllOrders)
   .get("/success", authorize("admin", "user"), verifySuccessPayment)
   .get("/cancel", authorize("admin", "user"), (req, res) => {
     res.send("Your Got Orders Cancelled");
