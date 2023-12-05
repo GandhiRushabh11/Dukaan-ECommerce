@@ -185,6 +185,9 @@ exports.uploadProductsImage = async (req, res, next) => {
       );
     }
     const images = req.files;
+    if (Array.isArray(images) && !images.length) {
+      return next(new ErrorResponse("Please Provide Product Images", 400));
+    }
     const imagesArray = images.map(
       (image) => image.destination + "/" + image.filename
     );
