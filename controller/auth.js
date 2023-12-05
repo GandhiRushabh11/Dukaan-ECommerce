@@ -230,7 +230,26 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     data: user,
   });
 });
+exports.uploadProfilePicture = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return next(new ErrorResponse("Please Provide Profile Image", 400));
+  }
+  let photoPath = req.file.destination + "/" + req.file.filename;
 
+  const User = await user.findByIdAndUpdate(
+    req.user._id,
+    { photo: photoPath },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+    data: User,
+  });
+});
 exports.verifyRefreshToken = asyncHandler(async (req, res, next) => {
   let token = req.body.refreshToken;
   if (!token) {
