@@ -6,6 +6,7 @@ const {
   getProducts,
   getProduct,
   uploadProductsImage,
+  getMyProducts,
 } = require("../controller/product.js");
 
 // Include other resource routers
@@ -37,7 +38,8 @@ const upload = multer({ storage: storage });
 router.use("/:productId/reviews", reviewRouter);
 router.use("/:productId/order", orderRouter);
 router
-  .get("/", getProducts)
+  .get("/", protect, authorize("admin", "customer"), getMyProducts)
+  .get("/all", getProducts)
   .post(
     "/createProduct",
     protect,

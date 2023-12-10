@@ -208,3 +208,15 @@ exports.uploadProductsImage = async (req, res, next) => {
     return next(new ErrorResponse(error, 500));
   }
 };
+
+exports.getMyProducts = asyncHandler(async (req, res, next) => {
+  try {
+    let user = req.user;
+    let product = await Product.find({ user });
+    res
+      .status(200)
+      .json({ success: true, total: product.length, data: product });
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+});
