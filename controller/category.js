@@ -40,6 +40,7 @@ exports.getCategory = asyncHandler(async (req, res, next) => {
   }
 });
 exports.deleteCategory = asyncHandler(async (req, res, next) => {
+  let user = req.user;
   let categories;
   try {
     categories = await category.findById();
@@ -47,6 +48,11 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
       return next(
         new ErrorResponse(`No Category with the id of ${req.params.id}`, 404)
       );
+    if (!(categories.user._id.toString() === user._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to delete for this Category`, 400)
+      );
+    }
     await categories.deleteOne();
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
@@ -55,6 +61,7 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateCategory = asyncHandler(async (req, res, next) => {
+  let user = req.user;
   let categories;
   try {
     categories = await category.findById(req.params.id);
@@ -62,11 +69,27 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
       return next(
         new ErrorResponse(`No Category with the id of ${req.params.id}`, 404)
       );
+    if (!(categories.user._id.toString() === user._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to delete for this Category`, 400)
+      );
+    }
     categories = await category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
     res.status(200).json({ success: true, data: categories });
+  } catch (error) {
+    return next(new ErrorResponse(error, 500));
+  }
+});
+
+exports.getMyCategorios = asyncHandler(async (req, res, next) => {
+  let user = req.user;
+  let Categorios;
+  try {
+    Categorios = await category.find({ user });
+    res.status(200).json({ success: true, data: Categorios });
   } catch (error) {
     return next(new ErrorResponse(error, 500));
   }

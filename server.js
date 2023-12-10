@@ -55,7 +55,7 @@ app.use(cors());
 app.use(cookieParser());
 
 //Router Monut
-app.use("/api/v1/", category);
+app.use("/api/v1/category", category);
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
 app.use("/api/v1/cart", cart);
