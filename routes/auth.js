@@ -34,7 +34,7 @@ const router = express.Router();
 router
   .post("/register", userRegister)
   .post("/login", userlogin)
-  .post("/verificationEmail", protect, sendEmailVerification)
+  .post("/verificationEmail/:id", sendEmailVerification)
   .post("/refreshToken", verifyRefreshToken);
 router
   .put("/updatePassword", protect, updatePassword)

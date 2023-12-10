@@ -22,6 +22,13 @@ exports.userRegister = asyncHandler(async (req, res, next) => {
   } = req.body;
 
   try {
+    // Check for user
+    const User = await user.findOne({ email });
+
+    if (User) {
+      return next(new ErrorResponse("Email is invalid or already taken", 401));
+    }
+
     createdUser = await user.create({
       firstname,
       lastname,
@@ -94,19 +101,21 @@ const sendTokenResponse = (user, statusCode, res) => {
 };
 
 exports.sendEmailVerification = asyncHandler(async function (req, res, next) {
-  let user = req.user;
-  if (!user) {
+  // Check for user
+  const User = await user.findById(req.params.id);
+
+  if (!User) {
     return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 
-  if (user.emailVerificationStatus === true && user.emailVerificationStatus) {
+  if (User.emailVerificationStatus === true && User.emailVerificationStatus) {
     return next(
       new ErrorResponse("your email is already verified with the system", 200)
     );
   } else {
     // Get email token
-    const emailToken = await user.setTokenForVerification();
-    await user.save({ validateBeforeSave: false });
+    const emailToken = await User.setTokenForVerification();
+    await User.save({ validateBeforeSave: false });
 
     // Create reset url
     const resetUrl = `${req.protocol}://${req.get(
@@ -114,22 +123,22 @@ exports.sendEmailVerification = asyncHandler(async function (req, res, next) {
     )}/api/v1/user/verifyEmail/${emailToken}`;
 
     const message = `Dear ${
-      user.firstname + " " + user.lastname
+      User.firstname + " " + User.lastname
     },Thank you for signing up with Dukaan Ecommerce. To complete your registration, please use link below to verify your email address:${resetUrl}`;
 
     try {
       await sendEmail({
-        email: user.email,
+        email: User.email,
         subject: "Email Verification - Dukaan Ecommerce",
         message,
       });
 
       res.status(200).json({ success: true, data: "Email sent", emailToken });
     } catch (err) {
-      user.emailVerificationToken = undefined;
-      user.emailVerificationTokenCreationTime = undefined;
+      User.emailVerificationToken = undefined;
+      User.emailVerificationTokenCreationTime = undefined;
 
-      await user.save({ validateBeforeSave: false });
+      await User.save({ validateBeforeSave: false });
 
       return next(new ErrorResponse("Email could not be sent", 500));
     }
