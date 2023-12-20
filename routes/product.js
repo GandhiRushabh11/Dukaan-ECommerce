@@ -7,6 +7,7 @@ const {
   getProduct,
   uploadProductsImage,
   getMyProducts,
+  getProductVideos,
 } = require("../controller/product.js");
 
 // Include other resource routers
@@ -65,5 +66,8 @@ router
     authorize("admin", "customer"),
     deleteProduct
   )
-  .get("/:id", getProduct);
+  .get("/video", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+  })
+  .get("/video/player", getProductVideos);
 module.exports = router;
